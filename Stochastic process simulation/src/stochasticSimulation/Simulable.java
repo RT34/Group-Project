@@ -8,9 +8,9 @@ public interface Simulable {
 	
 	/**Updates the current position of the particle
 	 * 
-	 * @param dt: timestep
+	 * @param dt: timestep in milliseconds
 	 */
-	public void updatePos(double dt);
+	public void updatePos(int dt);
 	
 	
 	/**returns current position
