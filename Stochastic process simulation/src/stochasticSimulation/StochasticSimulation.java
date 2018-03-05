@@ -94,7 +94,7 @@ import javax.swing.*;
 					.addGroup(
 							layout.createSequentialGroup()
 								.addComponent(addButton, 0, 150, 150)
-								.addComponent(add10Button, 0, 150,150)
+								.addComponent(add10Button, 0, 150, 150)
 								.addComponent(add100Button, 0, 150, 150)
 					)
 					.addGroup(
@@ -102,7 +102,7 @@ import javax.swing.*;
 								.addComponent(startButton, 0, 150, 150)
 								.addComponent(pauseButton, 0, 150, 150)
 								.addComponent(resetButton, 0, 150, 150)
-								.addComponent(clearButton, 0,150,150)
+								.addComponent(clearButton, 0, 150, 150)
 							)
 					);
 			//Sets up vertical positions of window components

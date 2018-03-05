@@ -39,20 +39,20 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			if (changePath) {
 				particle.updatePos(dt);
 			}
-			ArrayList<Point2D.Double> coordinates = particle.getPath();
+			ArrayList<Point> coordinates = particle.getPath();
 			if (coordinates.size() ==1) {
 				g.setColor(particle.getColor());
-				g.fillOval((int)coordinates.get(0).getX() + this.getWidth()/2-2, (int)coordinates.get(0).getY() +this.getHeight()/2-2, 4, 4);
+				g.fillOval(coordinates.get(0).x + this.getWidth()/2-2, coordinates.get(0).y +this.getHeight()/2-2, 4, 4);
 			}
 			else if(coordinates.size() != 0) {
 				//Draws path taken by particles. this.getDimension used so (0,0) in particle coordinates corresponds to the origin
 				g.setColor(new Color(particle.getColor().getRed()/255f, particle.getColor().getGreen()/255f, particle.getColor().getBlue()/255f, 0.1f));
 				for (int iii = 1; iii < coordinates.size(); iii++) {
-					g.drawLine((int)coordinates.get(iii-1).getX() + this.getWidth()/2, (int)coordinates.get(iii-1).getY() + this.getHeight()/2,
-							(int)coordinates.get(iii).getX() + this.getWidth()/2, (int)coordinates.get(iii).getY() + this.getHeight()/2);
+					g.drawLine( coordinates.get(iii-1).x + this.getWidth()/2, coordinates.get(iii-1).y + this.getHeight()/2,
+							coordinates.get(iii).x + this.getWidth()/2, coordinates.get(iii).y + this.getHeight()/2);
 				}
 				g.setColor(particle.getColor());
-				g.fillOval((int)coordinates.get(coordinates.size()-1).getX()+this.getWidth()/2 - 2, (int)coordinates.get(coordinates.size()-1).getY() + this.getHeight()/2 -2, 4, 4);
+				g.fillOval(coordinates.get(coordinates.size()-1).x+this.getWidth()/2 - 2, coordinates.get(coordinates.size()-1).y + this.getHeight()/2 -2, 4, 4);
 			}
 		}
 	}

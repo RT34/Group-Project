@@ -1,7 +1,7 @@
 package stochasticSimulation;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
+import java.awt.Point;
 import java.util.ArrayList;
 
 public interface Simulable {
@@ -17,14 +17,14 @@ public interface Simulable {
 	 * 
 	 * @return: current position in cartesian coordinates
 	 */
-	public Point2D.Double getPos();
+	public Point getPos();
 	
 	
 	/**Returns full path taken by the simulable object
 	 * 
 	 * @return: all points taken as an ArrayList
 	 */
-	public ArrayList<Point2D.Double> getPath();
+	public ArrayList<Point> getPath();
 	
 	/**Returns to default position and wipes path
 	 * 
@@ -36,18 +36,20 @@ public interface Simulable {
 	 * @param x: x coordinate
 	 * @param y: y coordinate
 	 * @param t: time
+	 * @param points: all existing probability densities to check
 	 * @return: probability density at given point
 	 */
-	public double getDensity(double x, double y, double t);
+	public double getDensity(double x, double y, double t, ArrayList<Point> points);
 	
 	
 	/**Calculates probability density at the given point
 	 * 
 	 * @param position: position in cartesian coordinates
 	 * @param t: current time
+	 * @param points: all existing probability densities to check
 	 * @return: probability density at given point
 	 */
-	public double getDensity(Point2D position, double t);
+	public double getDensity(Point position, double t, ArrayList<Point> points);
 	
 	
 	/**Gets stored colour for display

@@ -1,13 +1,14 @@
 package stochasticSimulation;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class BrownianParticle implements Simulable {
-	Point2D.Double currentCoordinates;
-	ArrayList<Point2D.Double> pastCoordinates;
+	Point currentCoordinates;
+	ArrayList<Point> pastCoordinates;
 	Random rand = new Random();
 	Color color;
 	
@@ -16,10 +17,10 @@ public class BrownianParticle implements Simulable {
 	 * @param x: x coordinate
 	 * @param y: y coordinate
 	 */
-	BrownianParticle(double x, double y) {
-		currentCoordinates = new Point2D.Double(x, y);
+	BrownianParticle(int x, int y) {
+		currentCoordinates = new Point(x, y);
 		color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-		pastCoordinates = new ArrayList<Point2D.Double>();
+		pastCoordinates = new ArrayList<Point>();
 	}
 	
 	/**Constructor, takes coordinates and also allows the addition of a complete path if this is necesary
@@ -28,8 +29,8 @@ public class BrownianParticle implements Simulable {
 	 * @param y: y coordinate
 	 * @param past: predefined path
 	 */
-	BrownianParticle (double x, double y, ArrayList<Point2D.Double>past ) {
-		currentCoordinates = new Point2D.Double(x,  y);
+	BrownianParticle (int x, int y, ArrayList<Point>past ) {
+		currentCoordinates = new Point(x,  y);
 		pastCoordinates = past;
 		color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 	}
@@ -38,8 +39,8 @@ public class BrownianParticle implements Simulable {
 	 * 
 	 */
 	BrownianParticle() {
-		currentCoordinates = new Point2D.Double(0,0);
-		pastCoordinates = new ArrayList<Point2D.Double>();
+		currentCoordinates = new Point(0,0);
+		pastCoordinates = new ArrayList<Point>();
 		color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 	}
 	
@@ -48,7 +49,7 @@ public class BrownianParticle implements Simulable {
 	 * @param dt: timestep in milliseconds
 	 */
 	public void updatePos(int dt) {
-		pastCoordinates.add((Point2D.Double)currentCoordinates.clone());
+		pastCoordinates.add((Point)currentCoordinates.clone());
 		ArrayList<Double> probabilities = new ArrayList<Double>();
 		ArrayList<Integer> coordChange = new ArrayList<Integer>();
 		int dx = 1; //Currently integer due to pixels, may be changed if necessary
@@ -97,38 +98,37 @@ public class BrownianParticle implements Simulable {
 	 * Resets to the origin with the path cleared
 	 */
 	public void reset() {
-		currentCoordinates.x = currentCoordinates.y = 0;
-		pastCoordinates = new ArrayList<Point2D.Double>();
+		currentCoordinates.x = 0;
+		currentCoordinates.y = 0;
+		pastCoordinates = new ArrayList<Point>();
 	}
-	public Point2D.Double getPos() {
+	public Point getPos() {
 		return currentCoordinates;
 	}
 
 
 	@Override
-	public ArrayList<Point2D.Double> getPath() {
-		ArrayList<Point2D.Double> results = (ArrayList<Point2D.Double>)pastCoordinates.clone();
-		results.add((Point2D.Double)currentCoordinates.clone());
+	public ArrayList<Point> getPath() {
+		ArrayList<Point> results = (ArrayList<Point>)pastCoordinates.clone();
+		results.add((Point)currentCoordinates.clone());
 		return results;
-	}
-
-
-	@Override
-	public double getDensity(double x, double y, double t) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	@Override
-	public double getDensity(Point2D position, double t) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 
 	@Override
 	public Color getColor() {
 		return color;
+	}
+
+	@Override
+	public double getDensity(double x, double y, double t, ArrayList<Point> points) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getDensity(Point position, double t, ArrayList<Point> points) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
