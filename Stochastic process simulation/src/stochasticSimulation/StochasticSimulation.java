@@ -14,6 +14,7 @@ import javax.swing.*;
 		private SimulationPanel display = null;
 		private ArrayList<JButton> buttons;
 		protected GroupLayout layout;
+		int dt;
 		
 		/**Enables/disables the buttons in the frame
 		 * 
@@ -33,7 +34,8 @@ import javax.swing.*;
 			buttons.get(ButtonIndex.CLEAR_BUTTON.getValue()).setEnabled(clear);
 		}
 		
-		public StochasticSimulation() {
+		public StochasticSimulation(int dt) {
+			this.dt = dt;
 			buttons = new ArrayList<JButton>();
 			frame = new JFrame ("Simple GUI");
 			layout = new GroupLayout(frame.getContentPane());
@@ -87,7 +89,7 @@ import javax.swing.*;
 			//TextField numParticles = new TextField("Enter the desired number of particles");
 			
 			
-			display = new SimulationPanel(100);
+			display = new SimulationPanel(dt);
 			//Sets up horizontal positions of window components
 			layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
 					.addComponent(display)
@@ -130,7 +132,7 @@ import javax.swing.*;
 			String command = e.getActionCommand();
 			switch (command) {
 			case "add":
-				display.addParticles(new BrownianParticle());
+				display.addParticles(new BrownianParticle(dt));
 				this.buttonsOnOff(true, false, false, true, true);
 				break;
 			case "start":
@@ -151,13 +153,13 @@ import javax.swing.*;
 				break;
 			case "add10":
 				for (int iii = 0; iii < 10; iii++) {
-					display.addParticles(new BrownianParticle());
+					display.addParticles(new BrownianParticle(dt));
 					this.buttonsOnOff(true, false, false, true, true);
 				}
 				break;
 			case "add100":
 				for (int iii = 0; iii < 100; iii++) {
-					display.addParticles(new BrownianParticle());
+					display.addParticles(new BrownianParticle(dt));
 					this.buttonsOnOff(true, false, false, true, true);
 				}
 			}
@@ -171,7 +173,7 @@ import javax.swing.*;
 		// TODO Auto-generated method stub
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				StochasticSimulation mainFrame = new StochasticSimulation();
+				StochasticSimulation mainFrame = new StochasticSimulation(100);
 			}
 		});
 		

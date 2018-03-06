@@ -39,7 +39,7 @@ public interface Simulable {
 	 * @param points: all existing probability densities to check
 	 * @return: probability density at given point
 	 */
-	public double getDensity(double x, double y, double t, ArrayList<Point> points);
+	public double getDensity(double x, double y, double t, ArrayList<ArrayList<Point>> points);
 	
 	
 	/**Calculates probability density at the given point
@@ -49,7 +49,7 @@ public interface Simulable {
 	 * @param points: all existing probability densities to check
 	 * @return: probability density at given point
 	 */
-	public double getDensity(Point position, double t, ArrayList<Point> points);
+	public double getDensity(Point position, double t, ArrayList<ArrayList<Point>> points);
 	
 	
 	/**Gets stored colour for display
