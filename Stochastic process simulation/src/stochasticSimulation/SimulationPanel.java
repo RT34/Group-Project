@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**Panel for handling and display of the simulation
  * 
@@ -17,6 +18,9 @@ public class SimulationPanel extends JPanel implements ActionListener {
 	int dt;
 	private Timer updateTimer;
 	boolean changePath;
+	boolean simDensity;
+	boolean densityInit = false;
+	ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
 	
 	/**Default constructor
 	 * 
@@ -27,6 +31,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 		this.setPreferredSize(new Dimension(900,700));
 		this.dt = dt;
 		updateTimer = new Timer(this.dt, this);
+		simDensity = false;
 	}
 	
 	@Override
@@ -68,7 +73,62 @@ public class SimulationPanel extends JPanel implements ActionListener {
 		g.drawRect(0, 0, this.getWidth()-1, this.getHeight()-1); //-1s required to make sure bottom and right borders display correctly
 		g.drawLine(this.getWidth()/2, 0, this.getWidth()/2, this.getHeight());
 		g.drawLine(0, this.getHeight()/2, this.getWidth(), this.getHeight()/2);
-		simParticles(g);
+		System.out.println("Redrawing");
+		int colHeight, rowWidth, stepSize;
+		if (!simDensity) {
+			simParticles(g);
+		}
+		else {
+			double maxDensity = 0;
+			ArrayList<ArrayList<Double>> newDensities = new ArrayList<ArrayList<Double>>();
+			if(densities.isEmpty())  {
+				densities = toModel.get(0).initDensity(this.getWidth(), this.getHeight());
+				for (ArrayList<Double> row : densities) {
+					double testMax = Collections.max(row);
+					maxDensity = (maxDensity < testMax) ? testMax : maxDensity;
+				}
+				for (ArrayList<Double> row : densities) {
+					newDensities.add((ArrayList<Double>)row.clone());
+				}
+				colHeight = densities.get(0).size();
+				rowWidth = densities.size();
+				stepSize = this.getHeight()/colHeight;
+				densityInit = true;
+			}
+			else {
+				colHeight = densities.get(0).size();
+				rowWidth = densities.size();
+				stepSize = this.getHeight()/colHeight;
+				for (int iii = 0; iii < rowWidth; iii++) {
+					newDensities.add(new ArrayList<Double>());
+					for (int jjj = 0; jjj < colHeight; jjj++) {
+						
+						double newDensity = toModel.get(0).getDensity(iii, jjj, dt,densities);
+						maxDensity = (maxDensity < newDensity) ? newDensity : maxDensity; //Trinary operator
+						newDensities.get(iii).add(newDensity);
+						if (newDensity != 0)
+							System.out.println(newDensity);
+					}
+				}
+				System.out.println(maxDensity);
+			}
+			System.out.println(colHeight);
+			System.out.println(rowWidth);
+			for (int iii = 0; iii < rowWidth; iii++) {
+				for (int jjj = 0; jjj < colHeight; jjj++) {
+					if (newDensities.get(iii).get(jjj) == 0.0) {
+						continue;
+					}
+					System.out.println(maxDensity);
+					g.setColor(new Color(0f, 1.f, 0f, (float)(newDensities.get(iii).get(jjj)/maxDensity)));
+					g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize);
+				}
+			}
+			densities = new ArrayList<ArrayList<Double>>();
+			for (int iii = 0; iii < newDensities.size(); iii++) {
+				densities.add( (ArrayList<Double>) newDensities.get(iii).clone());
+			}
+		}
 	}
 	
 	/**Adds particles to the system for simulation
@@ -118,5 +178,8 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			particle.reset();
 			repaint();
 		}
+	}
+	public void simDensity(boolean simDensity) {
+		this.simDensity = simDensity;
 	}
 }

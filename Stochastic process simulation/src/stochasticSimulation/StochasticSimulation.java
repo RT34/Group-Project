@@ -13,6 +13,7 @@ import javax.swing.*;
 		private JFrame frame = null;
 		private SimulationPanel display = null;
 		private ArrayList<JButton> buttons;
+		private JComboBox chooseSim;
 		protected GroupLayout layout;
 		int dt;
 		
@@ -22,7 +23,7 @@ import javax.swing.*;
 		 * @param pause: toggles pausebutton
 		 * @param reset: toggles resetbutton
 		 * @param add: toggles add button
-		 * @param clear: toggles clearbuton
+		 * @param clear: toggles clearbutton
 		 */
 		private void buttonsOnOff(boolean start, boolean pause, boolean reset, boolean add, boolean clear) {
 			buttons.get(ButtonIndex.START_BUTTON.getValue()).setEnabled(start);
@@ -34,6 +35,10 @@ import javax.swing.*;
 			buttons.get(ButtonIndex.CLEAR_BUTTON.getValue()).setEnabled(clear);
 		}
 		
+		/**General constructor. Sets up the window in all it's questionable glory.
+		 * 
+		 * @param dt: timestep to be used throughout the simulation(s)
+		 */
 		public StochasticSimulation(int dt) {
 			this.dt = dt;
 			buttons = new ArrayList<JButton>();
@@ -85,6 +90,12 @@ import javax.swing.*;
 			buttons.add(add100Button);
 			add100Button.addActionListener(this);
 			
+			String[] options = {"Simulate", "Probability density"};
+			chooseSim = new JComboBox(options);
+			chooseSim.setSelectedIndex(0);
+			chooseSim.addActionListener(this);
+			chooseSim.setActionCommand("simtype");
+			
 			this.buttonsOnOff(false, false, false, true, false);
 			//TextField numParticles = new TextField("Enter the desired number of particles");
 			
@@ -95,6 +106,7 @@ import javax.swing.*;
 					.addComponent(display)
 					.addGroup(
 							layout.createSequentialGroup()
+								.addComponent(chooseSim, 0, 200, 200)
 								.addComponent(addButton, 0, 150, 150)
 								.addComponent(add10Button, 0, 150, 150)
 								.addComponent(add100Button, 0, 150, 150)
@@ -112,6 +124,7 @@ import javax.swing.*;
 					.addComponent(display)
 					.addGroup(
 							layout.createParallelGroup()
+								.addComponent(chooseSim, 0, 30, 30)
 								.addComponent(addButton, 0, 30, 30)
 								.addComponent(add10Button, 0, 30, 30)
 								.addComponent(add100Button, 0, 30, 30)
@@ -130,26 +143,30 @@ import javax.swing.*;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String command = e.getActionCommand();
+			boolean simDensity = (chooseSim.getSelectedIndex() == 0);
 			switch (command) {
 			case "add":
 				display.addParticles(new BrownianParticle(dt));
 				this.buttonsOnOff(true, false, false, true, true);
+				chooseSim.setEnabled(false);
 				break;
 			case "start":
 				display.start();
 				this.buttonsOnOff(false, true, false, false, false);
+				chooseSim.setEnabled(false);
 				break;
 			case "pause":
 				display.stop();
-				this.buttonsOnOff(true, false, true, true, true);
+				this.buttonsOnOff(true, false, true, simDensity, true);
 				break;
 			case "clear":
 				display.clear();
-				this.buttonsOnOff(false, false, false, true, false);
+				this.buttonsOnOff(!simDensity, false, false, simDensity, false);
+				chooseSim.setEnabled(true);
 				break;
 			case "reset":
 				display.reset();
-				this.buttonsOnOff(true, false, false, true, true);
+				this.buttonsOnOff(true, false, false, simDensity, true);
 				break;
 			case "add10":
 				for (int iii = 0; iii < 10; iii++) {
@@ -162,6 +179,11 @@ import javax.swing.*;
 					display.addParticles(new BrownianParticle(dt));
 					this.buttonsOnOff(true, false, false, true, true);
 				}
+				break;
+			case "simtype":
+				this.buttonsOnOff(true, false, false, false, true);
+				display.simDensity(chooseSim.getSelectedIndex() == 1);
+				display.addParticles(new BrownianParticle(dt)); //This is hacky as balls, but seems to be necessary.
 			}
 			
 		}
@@ -173,7 +195,7 @@ import javax.swing.*;
 		// TODO Auto-generated method stub
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				StochasticSimulation mainFrame = new StochasticSimulation(100);
+				StochasticSimulation mainFrame = new StochasticSimulation(1000); //100 milliseconds seems to be the best to run this at: too laggy if much lower, too jerky if higher
 			}
 		});
 		
