@@ -6,6 +6,8 @@ import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**Panel for handling and display of the simulation
  * 
@@ -21,6 +23,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 	boolean simDensity;
 	boolean densityInit = false;
 	ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
+	ProgressMonitor monitor;
 	
 	/**Default constructor
 	 * 
@@ -39,6 +42,11 @@ public class SimulationPanel extends JPanel implements ActionListener {
 		repaint();
 		
 	}
+	
+	/**Simulates the movements of the particles being modelled
+	 * 
+	 * @param g: the graphics interface component thingy
+	 */
 	private void simParticles(Graphics g) {
 		for (Simulable particle: toModel) {
 			if (changePath) {
@@ -62,6 +70,94 @@ public class SimulationPanel extends JPanel implements ActionListener {
 		}
 	}
 	
+	private void displayDensity(Graphics g) {
+		int colHeight, rowWidth, stepSize;
+		double maxDensity = 0;
+		ArrayList<ArrayList<Double>> newDensities = new ArrayList<ArrayList<Double>>();
+		if(densities.isEmpty())  {
+			densities = toModel.get(0).initDensity(this.getWidth(), this.getHeight());
+			for (ArrayList<Double> row : densities) {
+				double testMax = Collections.max(row);
+				maxDensity = (maxDensity < testMax) ? testMax : maxDensity;
+			}
+			for (ArrayList<Double> row : densities) {
+				newDensities.add((ArrayList<Double>)row.clone());
+			}
+			colHeight = densities.get(0).size();
+			rowWidth = densities.size();
+			stepSize = this.getHeight()/colHeight;
+			densityInit = true;
+		}
+		else {
+			
+			monitor = new ProgressMonitor(this.getParent(), "Computing probability density", "", 0, densities.size());
+			monitor.setMillisToDecideToPopup(1);
+			colHeight = densities.get(0).size();
+			rowWidth = densities.size();
+			//Splits array into four for multithreading
+			ArrayList<ArrayList<ArrayList<Double>>> storePortions = new ArrayList<ArrayList<ArrayList<Double>>>();
+			ArrayList<ArrayList<Double>> expendableList = new ArrayList<ArrayList<Double>>();
+			for (ArrayList<Double> row : densities) {
+				expendableList.add((ArrayList<Double>)row.clone());
+			}
+			System.out.println(densities.size());
+			System.out.println(expendableList.size());
+			for (int iii = 0; iii < 4; iii++) {
+				storePortions.add(new ArrayList<ArrayList<Double>>());
+				for (int jjj = 0; jjj < densities.size()/4; jjj++) {
+					storePortions.get(iii).add((ArrayList<Double>) expendableList.get(0).clone());
+					expendableList.remove(0);
+				}
+				if(densities.size()%4 > iii) {
+					storePortions.get(iii).add((ArrayList<Double>) expendableList.get(0).clone());
+					expendableList.remove(0);
+				}
+			}
+			System.out.println(expendableList.size());
+			DensityCalculator calc1 = new DensityCalculator(storePortions.get(0), toModel.get(0), storePortions.get(0).size(), colHeight, densities, 0, dt);
+			DensityCalculator calc2 = new DensityCalculator(storePortions.get(1), toModel.get(0), storePortions.get(0).size() + storePortions.get(1).size(), colHeight, densities, storePortions.get(0).size(), dt);
+			DensityCalculator calc3= new DensityCalculator(storePortions.get(2), toModel.get(0), storePortions.get(0).size() + storePortions.get(1).size() + storePortions.get(2).size(), colHeight, 
+					densities, storePortions.get(0).size() + storePortions.get(1).size(), dt);
+			DensityCalculator calc4= new DensityCalculator(storePortions.get(3), toModel.get(0), storePortions.get(0).size() + storePortions.get(1).size() + storePortions.get(2).size() + storePortions.get(3).size(), colHeight, 
+					densities, storePortions.get(0).size() + storePortions.get(1).size() + storePortions.get(2).size(), dt);
+			ExecutorService threads = Executors.newFixedThreadPool(4);
+			threads.execute(calc1);
+			threads.execute(calc2);
+			threads.execute(calc3);
+			threads.execute(calc4);
+			threads.shutdown();
+			while (!threads.isTerminated()) {
+				
+			}
+			System.out.println("Done I guess?!");
+			newDensities = new ArrayList<ArrayList<Double>>();
+			for (int iii = 0; iii < 4; iii++) {
+				newDensities.addAll(storePortions.get(iii));
+			}
+			maxDensity  = (maxDensity < (calc1.getMax())) ? calc1.getMax() : maxDensity; //Trinary operator;
+			maxDensity  = (maxDensity < (calc2.getMax())) ? calc2.getMax() : maxDensity;
+			maxDensity  = (maxDensity < (calc3.getMax())) ? calc3.getMax() : maxDensity;
+			maxDensity  = (maxDensity < (calc4.getMax())) ? calc4.getMax() : maxDensity;
+			stepSize = this.getHeight()/colHeight;
+			
+		}
+		System.out.println(maxDensity);
+		for (int iii = 0; iii < rowWidth; iii++) {
+			for (int jjj = 0; jjj < colHeight; jjj++) {
+				if (newDensities.get(iii).get(jjj) == 0.0) {
+					continue;
+				}
+				g.setColor(new Color(0f, 1.f, 0f, (float)(newDensities.get(iii).get(jjj)/maxDensity)));
+				g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize);
+			}
+		}
+		densities = new ArrayList<ArrayList<Double>>();
+		for (int iii = 0; iii < newDensities.size(); iii++) {
+			for (int jjj = 0; jjj < newDensities.get(0).size(); jjj++)
+			densities.add((ArrayList<Double>) newDensities.get(iii).clone());
+		}
+	}
+	
 	/**Displays components to the window when update
 	 * 
 	 * @param g: I have no idea what this is :P It does some graphics things
@@ -74,60 +170,11 @@ public class SimulationPanel extends JPanel implements ActionListener {
 		g.drawLine(this.getWidth()/2, 0, this.getWidth()/2, this.getHeight());
 		g.drawLine(0, this.getHeight()/2, this.getWidth(), this.getHeight()/2);
 		System.out.println("Redrawing");
-		int colHeight, rowWidth, stepSize;
 		if (!simDensity) {
 			simParticles(g);
 		}
 		else {
-			double maxDensity = 0;
-			ArrayList<ArrayList<Double>> newDensities = new ArrayList<ArrayList<Double>>();
-			if(densities.isEmpty())  {
-				densities = toModel.get(0).initDensity(this.getWidth(), this.getHeight());
-				for (ArrayList<Double> row : densities) {
-					double testMax = Collections.max(row);
-					maxDensity = (maxDensity < testMax) ? testMax : maxDensity;
-				}
-				for (ArrayList<Double> row : densities) {
-					newDensities.add((ArrayList<Double>)row.clone());
-				}
-				colHeight = densities.get(0).size();
-				rowWidth = densities.size();
-				stepSize = this.getHeight()/colHeight;
-				densityInit = true;
-			}
-			else {
-				colHeight = densities.get(0).size();
-				rowWidth = densities.size();
-				stepSize = this.getHeight()/colHeight;
-				for (int iii = 0; iii < rowWidth; iii++) {
-					newDensities.add(new ArrayList<Double>());
-					for (int jjj = 0; jjj < colHeight; jjj++) {
-						
-						double newDensity = toModel.get(0).getDensity(iii, jjj, dt,densities);
-						maxDensity = (maxDensity < newDensity) ? newDensity : maxDensity; //Trinary operator
-						newDensities.get(iii).add(newDensity);
-						if (newDensity != 0)
-							System.out.println(newDensity);
-					}
-				}
-				System.out.println(maxDensity);
-			}
-			System.out.println(colHeight);
-			System.out.println(rowWidth);
-			for (int iii = 0; iii < rowWidth; iii++) {
-				for (int jjj = 0; jjj < colHeight; jjj++) {
-					if (newDensities.get(iii).get(jjj) == 0.0) {
-						continue;
-					}
-					System.out.println(maxDensity);
-					g.setColor(new Color(0f, 1.f, 0f, (float)(newDensities.get(iii).get(jjj)/maxDensity)));
-					g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize);
-				}
-			}
-			densities = new ArrayList<ArrayList<Double>>();
-			for (int iii = 0; iii < newDensities.size(); iii++) {
-				densities.add( (ArrayList<Double>) newDensities.get(iii).clone());
-			}
+			displayDensity(g);
 		}
 	}
 	

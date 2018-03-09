@@ -21,6 +21,7 @@ public class BrownianParticle implements Simulable {
 	 * @param dt: timestep to be used
 	 */
 	void calcProb(int dt) {
+		//IF THIS IS CHANGED GETDENSITY BREAKS HORRIBLY
 		int dx = 1; //Currently integer due to pixels, may be changed if necessary
 		int numCalcs = 1;
 		cumProb = 0;
@@ -145,34 +146,21 @@ public class BrownianParticle implements Simulable {
 
 	@Override
 	public double getDensity(int x, int y, double t, ArrayList<ArrayList<Double>> points) {
-
+		//This is currently busted if we ever change stepsize in calcprob so... don't
 		double density = 0;
-		int numCalcs = 0;
-		if (x == points.size() && y == points.get(0).size()) {
-			double asdf = 3;
-		}
-		for (int iii = -stepChange.get(stepChange.size() - 1); iii < stepChange.size(); iii++) {
-			for (int jjj = -stepChange.get(stepChange.size() - 1); jjj < stepChange.size(); jjj++ ) {
+		for (int iii = -stepChange.size() - 1; iii < stepChange.size(); iii++) {
+			for (int jjj = -stepChange.size() - 1; jjj < stepChange.size(); jjj++ ) {
 				//ignores undisplayed positions
-				if (x + iii < 0 || x + iii > points.size()/points.get(0).size() || y + jjj < 0 || y + jjj > points.get(0).size()) { 
+				if (x + iii < 0 || x + iii >= points.size() || y + jjj < 0 || y + jjj >= points.get(0).size()) { 
 					continue;
 				}
 				if (iii == 0 && jjj == 0) { //Odds of remaining where it is
-					density += (100000 * probabilities.get(0)) * points.get(iii).get(jjj); 
-				}
-				if (points.get(x + iii).get(y + jjj) == 1.0) {
-					System.out.println("Thank fuck for that");
+					density += ( probabilities.get(0)) * points.get(x).get(y); 
 				}
 				else {
-					density += 1000000000 * probabilities.get(Math.abs(iii)) * points.get(x + iii).get(y + jjj) / 2 *  probabilities.get(jjj) * points.get(x - iii).get(y - jjj) /2;
-					numCalcs++;
+					density +=  probabilities.get(Math.abs(iii)) * points.get(x + iii).get(y + jjj) / 2 *  probabilities.get(Math.abs(jjj)) * points.get(x + iii).get(y + jjj) /2;
 				}
 			}
-		}
-		if (density != 0.0) {
-			int asdf = 2;
-			System.out.println(x);
-			System.out.println(y);
 		}
 		return density;
 	}
@@ -185,14 +173,14 @@ public class BrownianParticle implements Simulable {
 	@Override
 	public ArrayList<ArrayList<Double>> initDensity(int x, int y) {
 		//density is zero everywhere but at the centre
-		int xStep = x/20; //Dividing by stepsize, stepsize must be even
-		int yStep = y/20;
+		int xStep = x/10;
+		int yStep = y/10;
 		ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
 		for (int iii = 0; iii < xStep; iii++) {
 			densities.add(new ArrayList<Double>());
 			for (int jjj = 0; jjj < yStep; jjj++) {
 				if (iii == xStep/2 && jjj == yStep/2) {
-					densities.get(iii).add(1.0);
+					densities.get(iii).add(10000000.0);
 				}
 				else {
 					densities.get(iii).add(0.0);
