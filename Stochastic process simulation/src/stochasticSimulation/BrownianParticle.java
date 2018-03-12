@@ -10,7 +10,7 @@ import java.util.stream.DoubleStream;
 public class BrownianParticle implements Simulable {
 	Point currentCoordinates;
 	ArrayList<Point> pastCoordinates;
-	Random rand = new Random();
+	Random rand = new Random(); //Random number generator
 	Color color;
 	ArrayList<Integer> stepChange;
 	ArrayList<Double> probabilities;
@@ -27,7 +27,7 @@ public class BrownianParticle implements Simulable {
 		probabilities.add(1d/Math.sqrt(2 * Math.PI * dt)); //probability at dx = 0, i.e. that which the particle remains stationary
 		cumProb += probabilities.get(0);
 		stepChange.add(0);
-		while (cumProb <0.975) {
+		while (cumProb <0.975 && numCalcs < 300) {
 			double prob = 2/Math.sqrt(2 * Math.PI * dt) * Math.exp(-(dx * dx)/(double)dt); //2 used due to symmetry in transition probabilities for positive or negative step.
 			if (prob == 0) { //Prevents adding multiple zero probabilities to end of list
 				break;
@@ -144,55 +144,41 @@ public class BrownianParticle implements Simulable {
 	}
 
 	@Override
-	public double getDensity(int x, int y, double t, ArrayList<ArrayList<Double>> points) {
-
-		double density = 0;
-		int numCalcs = 0;
-		if (x == points.size() && y == points.get(0).size()) {
-			double asdf = 3;
-		}
-		for (int iii = -stepChange.get(stepChange.size() - 1); iii < stepChange.size(); iii++) {
-			for (int jjj = -stepChange.get(stepChange.size() - 1); jjj < stepChange.size(); jjj++ ) {
+	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> points, ArrayList<ArrayList<Double>> newDensities) {
+		double prob = points.get(x).get(y);
+		assert (prob != 0);
+		for (int iii = -stepChange.size() + 1; iii < stepChange.size(); iii++) {
+			for (int jjj = -stepChange.size() + 1; jjj < stepChange.size(); jjj++) {
 				//ignores undisplayed positions
-				if (x + iii < 0 || x + iii > points.size()/points.get(0).size() || y + jjj < 0 || y + jjj > points.get(0).size()) { 
+				if (x + iii < 0 || x + iii >= points.size() || y + jjj < 0 || y + jjj >= points.get(0).size()) { 
 					continue;
 				}
-				if (iii == 0 && jjj == 0) { //Odds of remaining where it is
-					density += (100000 * probabilities.get(0)) * points.get(iii).get(jjj); 
-				}
-				if (points.get(x + iii).get(y + jjj) == 1.0) {
-					System.out.println("Thank fuck for that");
+				if (iii == 0 && jjj == 0) {
+					newDensities.get(x).set(y, probabilities.get(0) * prob); //Probability of remaining in the same place
 				}
 				else {
-					density += 1000000000 * probabilities.get(Math.abs(iii)) * points.get(x + iii).get(y + jjj) / 2 *  probabilities.get(jjj) * points.get(x - iii).get(y - jjj) /2;
-					numCalcs++;
+					newDensities.get(iii + x).set(jjj + y, newDensities.get(iii + x).get(jjj + y) + probabilities.get(Math.abs(iii)) * prob / 2 * probabilities.get(Math.abs(jjj)) * prob/2);
 				}
 			}
 		}
-		if (density != 0.0) {
-			int asdf = 2;
-			System.out.println(x);
-			System.out.println(y);
-		}
-		return density;
 	}
 
 	@Override
-	public double getDensity(Point position, double t, ArrayList<ArrayList<Double>> points) {
-		return getDensity(position.x, position.y, t, points);
+	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> points, ArrayList<ArrayList<Double>> newDensities) {
+		changeDensities(position.x, position.y, t, points, newDensities);
 	}
 	
 	@Override
 	public ArrayList<ArrayList<Double>> initDensity(int x, int y) {
 		//density is zero everywhere but at the centre
-		int xStep = x/20; //Dividing by stepsize, stepsize must be even
-		int yStep = y/20;
+		int xStep = x/6; //Dividing by stepsize, stepsize must be even
+		int yStep = y/6;
 		ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
 		for (int iii = 0; iii < xStep; iii++) {
 			densities.add(new ArrayList<Double>());
 			for (int jjj = 0; jjj < yStep; jjj++) {
 				if (iii == xStep/2 && jjj == yStep/2) {
-					densities.get(iii).add(1.0);
+					densities.get(iii).add(1000000000000.0);
 				}
 				else {
 					densities.get(iii).add(0.0);

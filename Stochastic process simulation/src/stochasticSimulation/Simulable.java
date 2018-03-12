@@ -32,24 +32,24 @@ public interface Simulable {
 	public void reset();
 	
 	/**Calculates probability density at the given point
+	 * @param newDensities TODO
 	 * 
 	 * @param x: x coordinate
 	 * @param y: y coordinate
 	 * @param t: time
 	 * @param points: all existing probability densities to check
-	 * @return: probability density at given point
 	 */
-	public double getDensity(int x, int y, double t, ArrayList<ArrayList<Double>> probDensities);
+	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities);
 	
 	
 	/**Calculates probability density at the given point
+	 * @param newDensities TODO
 	 * 
 	 * @param position: position in cartesian coordinates
 	 * @param t: current time
 	 * @param points: all existing probability densities to check
-	 * @return: probability density at given point
 	 */
-	public double getDensity(Point position, double t, ArrayList<ArrayList<Double>> probDensities);
+	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities);
 	
 	/**Generates initial particle density
 	 * 
