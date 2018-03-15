@@ -96,37 +96,49 @@ public class SimulationPanel extends JPanel implements ActionListener {
 				densityInit = true;
 			}
 			else {
+				for (ArrayList<Double> row : densities) {
+					newDensities.add((ArrayList<Double>)row.clone());
+				}
 				colHeight = densities.get(0).size();
 				rowWidth = densities.size();
 				stepSize = this.getHeight()/colHeight;
+				int nProgress = 10;
 				for (int iii = 0; iii < rowWidth; iii++) {
-					newDensities.add(new ArrayList<Double>());
+					if (iii/(double)rowWidth * 100 > nProgress) {
+						System.out.println("This is " + nProgress + "% complete");
+						nProgress+=10;
+					}
 					for (int jjj = 0; jjj < colHeight; jjj++) {
-						
-						double newDensity = toModel.get(0).getDensity(iii, jjj, dt,densities);
-						maxDensity = (maxDensity < newDensity) ? newDensity : maxDensity; //Trinary operator
-						newDensities.get(iii).add(newDensity);
-						if (newDensity != 0)
-							System.out.println(newDensity);
+						if (densities.get(iii).get(jjj) == 0.0) {
+							continue;
+						}
+						toModel.get(0).changeDensities(iii, jjj, dt, densities, newDensities);
 					}
 				}
-				System.out.println(maxDensity);
 			}
-			System.out.println(colHeight);
-			System.out.println(rowWidth);
+			for (ArrayList<Double> row : newDensities) {
+				double toCheck = Collections.max(row);
+				maxDensity = (toCheck > maxDensity) ? toCheck : maxDensity;
+			}
+			System.out.println(maxDensity);
 			for (int iii = 0; iii < rowWidth; iii++) {
 				for (int jjj = 0; jjj < colHeight; jjj++) {
 					if (newDensities.get(iii).get(jjj) == 0.0) {
 						continue;
 					}
-					System.out.println(maxDensity);
+					try {
 					g.setColor(new Color(0f, 1.f, 0f, (float)(newDensities.get(iii).get(jjj)/maxDensity)));
+					}
+					catch (IllegalArgumentException e) {
+						System.out.println(newDensities.get(iii).get(jjj)/maxDensity);
+						assert (false);
+					}
 					g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize);
 				}
 			}
 			densities = new ArrayList<ArrayList<Double>>();
-			for (int iii = 0; iii < newDensities.size(); iii++) {
-				densities.add( (ArrayList<Double>) newDensities.get(iii).clone());
+			for (ArrayList<Double> row : newDensities) {
+				densities.add( (ArrayList<Double>) row.clone());
 			}
 		}
 	}

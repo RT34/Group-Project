@@ -14,6 +14,8 @@ import javax.swing.*;
 		private SimulationPanel display = null;
 		private ArrayList<JButton> buttons;
 		private JComboBox chooseSim;
+		private JComboBox chooseSimulable;
+		private int toSimulate;
 		protected GroupLayout layout;
 		int dt;
 		
@@ -49,7 +51,7 @@ import javax.swing.*;
 			layout.setAutoCreateContainerGaps(true);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			//Display the window
-			frame.setSize(950,900);
+			frame.setSize(950, 1000);
 			//Sets it to middle of screen (assuming the screen is sufficiently large
 			frame.setLocation(Toolkit.getDefaultToolkit().getScreenSize().width/2 - frame.getWidth()/2,Toolkit.getDefaultToolkit().getScreenSize().height/2 - frame.getHeight()/2); 
 			
@@ -96,6 +98,14 @@ import javax.swing.*;
 			chooseSim.addActionListener(this);
 			chooseSim.setActionCommand("simtype");
 			
+			//ADDING NEW OPTIONs
+			String[] options2 = {"Brownian particle", "1D free particle", "2D free particle"};
+			chooseSimulable = new JComboBox(options2);
+			chooseSimulable.setSelectedIndex(0);
+			chooseSimulable.addActionListener(this);
+			chooseSimulable.setActionCommand("simulable");
+			toSimulate = 0;
+			
 			this.buttonsOnOff(false, false, false, true, false);
 			//TextField numParticles = new TextField("Enter the desired number of particles");
 			
@@ -104,6 +114,7 @@ import javax.swing.*;
 			//Sets up horizontal positions of window components
 			layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
 					.addComponent(display)
+					.addComponent(chooseSimulable, 0, 200, 200)
 					.addGroup(
 							layout.createSequentialGroup()
 								.addComponent(chooseSim, 0, 200, 200)
@@ -122,6 +133,7 @@ import javax.swing.*;
 			//Sets up vertical positions of window components
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(display)
+					.addComponent(chooseSimulable, 0, 30, 30)
 					.addGroup(
 							layout.createParallelGroup()
 								.addComponent(chooseSim, 0, 30, 30)
@@ -146,7 +158,7 @@ import javax.swing.*;
 			boolean simDensity = (chooseSim.getSelectedIndex() == 0);
 			switch (command) {
 			case "add":
-				display.addParticles(new BrownianParticle(dt));
+				this.addParticles(1);
 				this.buttonsOnOff(true, false, false, true, true);
 				chooseSim.setEnabled(false);
 				break;
@@ -169,33 +181,56 @@ import javax.swing.*;
 				this.buttonsOnOff(true, false, false, simDensity, true);
 				break;
 			case "add10":
-				for (int iii = 0; iii < 10; iii++) {
-					display.addParticles(new BrownianParticle(dt));
-					this.buttonsOnOff(true, false, false, true, true);
-				}
+				this.addParticles(10);
+				this.buttonsOnOff(true, false, false, true, true);
 				break;
 			case "add100":
-				for (int iii = 0; iii < 100; iii++) {
-					display.addParticles(new BrownianParticle(dt));
-					this.buttonsOnOff(true, false, false, true, true);
-				}
+				this.addParticles(100);
+				this.buttonsOnOff(true, false, false, true, true);
 				break;
 			case "simtype":
 				this.buttonsOnOff(true, false, false, false, true);
-				display.simDensity(chooseSim.getSelectedIndex() == 1);
-				display.addParticles(new BrownianParticle(dt)); //This is hacky as balls, but seems to be necessary.
+				simDensity = chooseSim.getSelectedIndex() == 1;
+				System.out.println(simDensity);
+				display.simDensity(simDensity);
+				if (simDensity) {
+					addParticles(1); //This is hacky as balls, but seems to be necessary.
+				}
+				break;
+			case "simulable":
+				this.toSimulate = chooseSimulable.getSelectedIndex();
 			}
+			
 			
 		}
 
 		Object getComponent(ButtonIndex index) {
 			return this.getComponent(index.getValue());
 		}
+		
+		/**Adds a number of the currently selected type of particlers to the display
+		 * 
+		 * @param number: number to add
+		 */
+		void addParticles (int number) {
+			switch (Simulables.fromIndex(toSimulate)) {
+				case BROWNIAN_PARTICLE:
+					for (int iii = 0; iii < number; iii++) {
+						display.addParticles(new BrownianParticle(dt));
+					}
+				case ONED_PARTICLE:
+					for (int iii = 0; iii < number; iii++) {
+						display.addParticles(new OneDParticle(dt));
+					}
+					break;
+				case TWOD_PARTICLE:
+			}
+		}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				StochasticSimulation mainFrame = new StochasticSimulation(1000); //100 milliseconds seems to be the best to run this at: too laggy if much lower, too jerky if higher
+				StochasticSimulation mainFrame = new StochasticSimulation(100); //100 milliseconds seems to be the best to run this at: too laggy if much lower, too jerky if higher
 			}
 		});
 		
