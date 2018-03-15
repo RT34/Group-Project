@@ -99,7 +99,7 @@ import javax.swing.*;
 			chooseSim.setActionCommand("simtype");
 			
 			//ADDING NEW OPTIONs
-			String[] options2 = {"Brownian particle", "1D free particle", "2D free particle", "test"};
+			String[] options2 = {"Brownian particle", "1D free particle", "2D free particle"};
 			chooseSimulable = new JComboBox(options2);
 			chooseSimulable.setSelectedIndex(0);
 			chooseSimulable.addActionListener(this);
@@ -224,9 +224,6 @@ import javax.swing.*;
 					}
 					break;
 				case TWOD_PARTICLE:
-				case TEST_PARTICLE:
-					display.addParticle(new TestParticle());
-					default: assert (false) : "YOu forgot to properly add the case";
 			}
 		}
 	public static void main(String[] args) {
