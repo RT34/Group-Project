@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 
@@ -154,10 +155,12 @@ public class BrownianParticle implements Simulable {
 					continue;
 				}
 				if (iii == 0 && jjj == 0) {
-					newDensities.get(x).set(y, probabilities.get(0) * prob); //Probability of remaining in the same place
+					continue;
 				}
 				else {
-					newDensities.get(iii + x).set(jjj + y, newDensities.get(iii + x).get(jjj + y) + probabilities.get(Math.abs(iii)) * prob / 2 * probabilities.get(Math.abs(jjj)) * prob/2);
+					double probChange = probabilities.get(Math.abs(iii)) * probabilities.get(Math.abs(jjj)) * prob /4;
+					newDensities.get(iii + x).set(jjj + y, newDensities.get(iii + x).get(jjj + y) + probChange);
+					newDensities.get(x).set(y, newDensities.get(x).get(y) - probChange);
 				}
 			}
 		}

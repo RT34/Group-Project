@@ -14,20 +14,23 @@ public class OneDParticle implements Simulable {
 	Point currentCoordinates;
 	ArrayList<Point> pastCoordinates;
 	Random rand = new Random();
-	Color color;
+	Color colour;
 	int numSteps; //Number of values of dx
 	double p;
 	
 	public OneDParticle(int dt) {
-		this.currentCoordinates = new Point(0,0);
-		this.color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+		this.currentCoordinates = new Point(0,rand.nextInt(100) - 50);
+		this.colour = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 		numSteps = 5;
 		p = 0.1;
 	}
 	@Override
 	public void updatePos(int dt) {
+		double cumProb = 0;
 		for (int iii = 1; iii < numSteps +1; iii++) {
-			if (rand.nextDouble() <= p/iii) {
+			double prob = rand.nextDouble();
+			cumProb += p/iii;
+			if (prob <= cumProb) {
 				this.currentCoordinates.x += iii;
 				break;
 			}
@@ -73,7 +76,7 @@ public class OneDParticle implements Simulable {
 
 	@Override
 	public ArrayList<ArrayList<Double>> initDensity(int length, int height) {
-		//density is zero everywhere but at the centre
+		//density is zero everywhere but a vertical line at the centre, makes it easier to see
 				int xStep = length; //Dividing by stepsize, stepsize must be even
 				int yStep = height;
 				ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
@@ -93,7 +96,7 @@ public class OneDParticle implements Simulable {
 
 	@Override
 	public Color getColor() {
-		return this.color;
+		return this.colour;
 	}
 
 }

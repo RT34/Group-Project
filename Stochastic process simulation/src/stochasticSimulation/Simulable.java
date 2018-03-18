@@ -3,6 +3,7 @@ package stochasticSimulation;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 
 public interface Simulable {
 	
@@ -10,7 +11,7 @@ public interface Simulable {
 	 * 
 	 * @param dt: timestep in milliseconds
 	 */
-	public void updatePos(int dt);
+	public void updatePos(int dt) throws InputMismatchException;
 	
 	
 	/**returns current position
@@ -39,7 +40,7 @@ public interface Simulable {
 	 * @param t: time
 	 * @param points: all existing probability densities to check
 	 */
-	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities);
+	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities) throws InputMismatchException;
 	
 	
 	/**Calculates probability density at the given point
@@ -49,7 +50,7 @@ public interface Simulable {
 	 * @param t: current time
 	 * @param points: all existing probability densities to check
 	 */
-	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities);
+	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> probDensities, ArrayList<ArrayList<Double>> newDensities) throws InputMismatchException;
 	
 	/**Generates initial particle density
 	 * 
