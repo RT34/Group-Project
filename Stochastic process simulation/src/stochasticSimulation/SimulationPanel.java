@@ -57,7 +57,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 				particle.updatePos(dt);
 			}
 			ArrayList<Point> coordinates = particle.getPath();
-			if(coordinates.size() != 0) {
+			if(coordinates.size() > 1) {
 				//Draws path taken by particles. this.getDimension used so (0,0) in particle coordinates corresponds to the origin
 				g.setColor(new Color(particle.getColor().getRed()/255f, particle.getColor().getGreen()/255f, particle.getColor().getBlue()/255f, 0.1f));
 				for (int iii = 1; iii < coordinates.size(); iii++) {
@@ -85,13 +85,13 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			g.drawLine(this.getWidth()/2, 0, this.getWidth()/2, this.getHeight());
 			g.drawLine(0, this.getHeight()/2, this.getWidth(), this.getHeight()/2);
 			System.out.println("Redrawing");
+			if (toModel.isEmpty()) {
+				return;
+			}
 			if (!simDensity) {
 				simParticles(g);
 			}
 			else {
-				if (toModel.isEmpty()) {
-					return;
-				}
 				int colHeight, rowWidth, stepSize;
 				double maxDensity = 0;
 				ArrayList<ArrayList<Double>> newDensities = new ArrayList<ArrayList<Double>>();

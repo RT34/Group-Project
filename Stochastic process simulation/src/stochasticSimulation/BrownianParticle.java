@@ -21,15 +21,15 @@ public class BrownianParticle implements Simulable {
 	 * 
 	 * @param dt: timestep to be used
 	 */
-	void calcProb(int dt) {
+	void calcProb(int timestep) {
 		int dx = 1; //Currently integer due to pixels, may be changed if necessary
 		int numCalcs = 1;
+		double dt = timestep;
 		cumProb = 0;
-		probabilities.add(1d/Math.sqrt(2 * Math.PI * dt)); //probability at dx = 0, i.e. that which the particle remains stationary
-		cumProb += probabilities.get(0);
+		probabilities.add(1.0/Math.sqrt(2.0 * Math.PI * dt)); //probability at dx = 0, i.e. that which the particle remains stationary
 		stepChange.add(0);
-		while (cumProb <0.975 && numCalcs < 300) {
-			double prob = 2/Math.sqrt(2 * Math.PI * dt) * Math.exp(-(dx * dx)/(double)dt); //2 used due to symmetry in transition probabilities for positive or negative step.
+		while (cumProb <0.975) {// && numCalcs < 300) {
+			double prob = 2.0/Math.sqrt(2.0 * Math.PI * dt) * Math.exp(-(dx * dx)/(double)dt); //2 used due to symmetry in transition probabilities for positive or negative step.
 			if (prob == 0) { //Prevents adding multiple zero probabilities to end of list
 				break;
 			}
@@ -97,7 +97,7 @@ public class BrownianParticle implements Simulable {
 			}
 			double checkProb = 0;
 			int step = 0;
-			for (int jjj = 0; jjj < probabilities.size(); jjj++) { //Checks for each cumulative probability if this is the path the particle is taking
+			for (int jjj = 1; jjj < probabilities.size(); jjj++) { //Checks for each cumulative probability if this is the path the particle is taking
 				checkProb += probabilities.get(jjj);
 				if (result < checkProb) { //Essentially, we're finding this by looking at which gap the random number falls into
 					step = stepChange.get(jjj);
@@ -158,7 +158,7 @@ public class BrownianParticle implements Simulable {
 					continue;
 				}
 				else {
-					double probChange = probabilities.get(Math.abs(iii)) * probabilities.get(Math.abs(jjj)) * prob /4;
+					double probChange = probabilities.get(Math.abs(iii)) * probabilities.get(Math.abs(jjj)) * prob / (((iii == 0) ? 1 : 2) * ((jjj == 0) ? 1: 2));
 					newDensities.get(iii + x).set(jjj + y, newDensities.get(iii + x).get(jjj + y) + probChange);
 					newDensities.get(x).set(y, newDensities.get(x).get(y) - probChange);
 				}

@@ -17,9 +17,27 @@ public class TwoDParticle implements Simulable {
 	ArrayList<Point> steps = new ArrayList<Point>();
 	
 	public TwoDParticle() {
-		this.currentCoordinates = new Point(0,0);
+		int startPoint = rand.nextInt(3);
+		ArrayList<Double> locationProbs = new ArrayList<Double>();
+		double totalProb = 0;
+		for (int iii = 0; iii <= 100; iii++) {
+			locationProbs.add(Math.abs(Math.cos(iii * Math.PI /50)));
+			totalProb += Math.abs(Math.cos(iii * Math.PI / 50));
+		}
+		double cumProb = 0;
+		double location = rand.nextDouble();
+		for (int iii = 0; iii <= 100; iii++) {
+			double prob = locationProbs.get(iii);
+			prob/= totalProb;
+			cumProb += prob;
+			if (location <= cumProb) {
+				this.currentCoordinates = new Point((rand.nextInt(2) != 0)? -iii : iii, 0);
+				break;
+			}
+		}
+		//this.currentCoordinates = new Point((startPoint == 0) ? -30 : (startPoint == 1) ? 0 : 30,0);
 		this.colour = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-		maxSteps = new Point(4,2);
+		maxSteps = new Point(2,2);
 		p = new Point2D.Double(0.4, 0.4);
 		probabilities.add(new Point2D.Double(1, 1));
 		for (int iii = 1; iii <= maxSteps.x; iii++) {
@@ -34,7 +52,7 @@ public class TwoDParticle implements Simulable {
 				probabilities.add(new Point2D.Double(0, 0));
 			}
 			probabilities.get(jjj).y = p.y/jjj;
-			if (jjj >= steps.size()) {
+			if (jjj > steps.size()) {
 				steps.add(new Point(0,jjj));
 			}
 			else {
@@ -129,8 +147,8 @@ public class TwoDParticle implements Simulable {
 		for (int iii = 0; iii < xStep; iii++) {
 			densities.add(new ArrayList<Double>());
 			for (int jjj = 0; jjj < yStep; jjj++) {
-				if (iii == xStep/2 && jjj == yStep/2) {
-					densities.get(iii).add(1000000000000.0);
+				if (iii >= xStep/2 - 200 && iii <= xStep/2+ 200 && jjj == yStep/2) {
+					densities.get(iii).add(1000000000000.0 * Math.abs(Math.cos(iii * Math.PI /100.0)));
 				}
 				else {
 					densities.get(iii).add(0.0);
