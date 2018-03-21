@@ -28,9 +28,10 @@ public class BrownianParticle implements Simulable {
 		cumProb = 0;
 		probabilities.add(1.0/Math.sqrt(2.0 * Math.PI * dt)); //probability at dx = 0, i.e. that which the particle remains stationary
 		stepChange.add(0);
-		while (cumProb <0.975) {// && numCalcs < 300) {
+		while (cumProb <0.975 && numCalcs < 25) {
 			double prob = 2.0/Math.sqrt(2.0 * Math.PI * dt) * Math.exp(-(dx * dx)/(double)dt); //2 used due to symmetry in transition probabilities for positive or negative step.
 			if (prob == 0) { //Prevents adding multiple zero probabilities to end of list
+				System.out.println("Yes");
 				break;
 			}
 			stepChange.add(dx++); //stores change in x by same index as probabilities.
@@ -39,6 +40,7 @@ public class BrownianParticle implements Simulable {
 			numCalcs++;
 			
 		}
+		System.out.println(cumProb);
 		assert(cumProb <=1) : "Total probability cannot be more than one, how did this even happen...";
 	}
 	/**Constructor, takes coordinates and generates a random colour for this particle
@@ -180,7 +182,7 @@ public class BrownianParticle implements Simulable {
 		for (int iii = 0; iii < xStep; iii++) {
 			densities.add(new ArrayList<Double>());
 			for (int jjj = 0; jjj < yStep; jjj++) {
-				if (iii == xStep/2 && jjj == yStep/2) {
+				if ((iii == xStep/2) && (jjj == yStep/2)) {
 					densities.get(iii).add(1000000000000.0);
 				}
 				else {

@@ -228,9 +228,8 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 			}
 		}
 	}
-	public void pause () {
-		buttons.get(ButtonIndex.PAUSE_BUTTON.getValue()).doClick();
-	}
+	
+	
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
