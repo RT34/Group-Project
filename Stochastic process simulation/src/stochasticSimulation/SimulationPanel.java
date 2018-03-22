@@ -15,12 +15,11 @@ import java.util.InputMismatchException;
  */
 public class SimulationPanel extends JPanel implements ActionListener {
 	ArrayList<Simulable>toModel = new ArrayList<Simulable>();
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L; //Required by extending JPanel
 	int dt;
 	private Timer updateTimer;
 	boolean changePath;
 	boolean simDensity;
-	boolean densityInit = false;
 	int numDraws = 0;
 	ArrayList<ArrayList<Double>> densities = new ArrayList<ArrayList<Double>>();
 	boolean lastDraw = false;
@@ -48,7 +47,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 
 	/**Handles the drawing and display of particles being modelled
 	 * 
-	 * @param g: the graphics object the particles are being output to
+	 * @param g : the graphics object the particles are being output to
 	 * @throws Exception 
 	 */
 	private void simParticles(Graphics g) throws InputMismatchException {
@@ -56,6 +55,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			if (changePath) {
 				particle.updatePos(dt);
 			}
+			//draws particle path beneath all particles
 			ArrayList<Point> coordinates = particle.getPath();
 			if(coordinates.size() > 1) {
 				//Draws path taken by particles. this.getDimension used so (0,0) in particle coordinates corresponds to the origin
@@ -74,10 +74,11 @@ public class SimulationPanel extends JPanel implements ActionListener {
 
 	/**Displays components to the window when update
 	 * 
-	 * @param g: I have no idea what this is :P It does some graphics things
+	 * @param g : graphics object for output
 	 */
 	public void paint(Graphics g) {
 		try {
+			//Draws background
 			g.setColor(Color.WHITE);
 			g.fillRect(0,0, this.getWidth(), this.getHeight());
 			g.setColor(Color.BLACK);
@@ -85,12 +86,17 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			g.drawLine(this.getWidth()/2, 0, this.getWidth()/2, this.getHeight());
 			g.drawLine(0, this.getHeight()/2, this.getWidth(), this.getHeight()/2);
 			System.out.println("Redrawing");
+			
+			//Returns if there are no particles
 			if (toModel.isEmpty()) {
 				return;
 			}
+			
 			if (!simDensity) {
 				simParticles(g);
 			}
+			
+			//drawing of probability densities, impractical to place in separate method
 			else {
 				int colHeight, rowWidth, stepSize;
 				double maxDensity = 0;
@@ -102,13 +108,14 @@ public class SimulationPanel extends JPanel implements ActionListener {
 						maxDensity = (maxDensity < testMax) ? testMax : maxDensity;
 					}
 					for (ArrayList<Double> row : densities) {
-						newDensities.add((ArrayList<Double>)row.clone());
+						newDensities.add((ArrayList<Double>)row.clone()); //Ensure elements are not a reference to the previous array
 					}
+					//Scales size of pixels appropriately based on inital densities
 					colHeight = densities.get(0).size();
 					rowWidth = densities.size();
 					stepSize = this.getHeight()/colHeight;
-					densityInit = true;
 				}
+				
 				else {
 					for (ArrayList<Double> row : densities) {
 						newDensities.add((ArrayList<Double>)row.clone());
@@ -130,15 +137,15 @@ public class SimulationPanel extends JPanel implements ActionListener {
 						}
 					}
 				}
+				
 				for (ArrayList<Double> row : newDensities) {
 					double toCheck = Collections.max(row);
 					maxDensity = (toCheck > maxDensity) ? toCheck : maxDensity;
 				}
 				System.out.println(maxDensity);
-				//System.out.println(++numDraws);
 				for (int iii = 0; iii < rowWidth; iii++) {
 					for (int jjj = 0; jjj < colHeight; jjj++) {
-						if (newDensities.get(iii).get(jjj) == 0.0) {
+						if (newDensities.get(iii).get(jjj) == 0.0) { //Skips draw of blank pixels
 							continue;
 						}
 						try {
@@ -148,12 +155,12 @@ public class SimulationPanel extends JPanel implements ActionListener {
 							System.out.println(newDensities.get(iii).get(jjj)/maxDensity);
 							assert (false) : "Negative density encountered";
 						}
-						g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize);
+						g.fillRect(iii * stepSize + stepSize/2, jjj * stepSize + stepSize/2, stepSize, stepSize); //Scales base display size as appropriate
 					}
 				}
-				densities = new ArrayList<ArrayList<Double>>();
+				densities = new ArrayList<ArrayList<Double>>(); //Clears previous list
 				for (ArrayList<Double> row : newDensities) {
-					densities.add( (ArrayList<Double>) row.clone());
+					densities.add( (ArrayList<Double>) row.clone()); //Replaces with independent copy of new list
 				}
 			}
 			g.setColor(Color.BLACK);
@@ -163,10 +170,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 			}
 		}
 		catch (InputMismatchException e) {
-			//StochasticSimulation parent = (StochasticSimulation) SwingUtilities.getRoot(this);
-			//parent.pause();
 			System.out.println(e);
-
 		}
 	}
 
@@ -175,6 +179,7 @@ public class SimulationPanel extends JPanel implements ActionListener {
 	 * @param toAdd: an array of particles to add
 	 */
 	public void addParticles(ArrayList<Simulable> toAdd) {
+		this.changePath = false;
 		this.toModel.addAll(toAdd);
 		this.repaint();
 	}
@@ -196,7 +201,6 @@ public class SimulationPanel extends JPanel implements ActionListener {
 	public void clear() {
 		this.toModel = new ArrayList<Simulable>();
 		this.numDraws = 0;
-		this.densityInit = false;
 		if (this.densities.size() != 0) {
 			this.densities = new ArrayList<ArrayList<Double>>();
 		}

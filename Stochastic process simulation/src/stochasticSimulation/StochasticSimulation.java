@@ -7,9 +7,14 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
+/** Class to display the main window for the simulation of stochastic dynamics, and handle button presses and user inputs.
+ * 
+ * @author rbroo
+ *
+ */
 public class StochasticSimulation extends JFrame implements ActionListener {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L; //Required by JFrame
 	private JFrame frame = null;
 	private SimulationPanel display = null;
 	private ArrayList<JButton> buttons;
@@ -21,11 +26,11 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 		
 	/**Enables/disables the buttons in the frame
 	 * 
-	 * @param start: toggles startbutton
-	 * @param pause: toggles pausebutton
-	 * @param reset: toggles resetbutton
-	 * @param add: toggles add button
-	 * @param clear: toggles clearbutton
+	 * @param start : toggles startbutton
+	 * @param pause : toggles pausebutton
+	 * @param reset : toggles resetbutton
+	 * @param add : toggles add button
+	 * @param clear : toggles clearbutton
 	 */
 	private void buttonsOnOff(boolean start, boolean pause, boolean reset, boolean add, boolean clear) {
 		buttons.get(ButtonIndex.START_BUTTON.getValue()).setEnabled(start);
@@ -39,7 +44,7 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 		
 	/**General constructor. Sets up the window in all its questionable glory.
 	 * 
-	 * @param dt: timestep to be used throughout the simulation(s)
+	 * @param dt : timestep to be used throughout the simulation(s)
 	 */
 	public StochasticSimulation(int dt) {
 		this.dt = dt;
@@ -50,7 +55,6 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 		layout.setAutoCreateGaps(true);
 		layout.setAutoCreateContainerGaps(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//Display the window
 		frame.setSize(950, 1000);
 		//Sets it to middle of screen (assuming the screen is sufficiently large
 		frame.setLocation(Toolkit.getDefaultToolkit().getScreenSize().width/2 - frame.getWidth()/2,Toolkit.getDefaultToolkit().getScreenSize().height/2 - frame.getHeight()/2); 
@@ -92,13 +96,14 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 		buttons.add(add100Button);
 		add100Button.addActionListener(this);
 
+		//Simulation type box
 		String[] options = {"Simulate", "Probability density"};
 		chooseSim = new JComboBox(options);
 		chooseSim.setSelectedIndex(0);
 		chooseSim.addActionListener(this);
 		chooseSim.setActionCommand("simtype");
 
-		//ADDING NEW OPTIONs
+		//Particle choice box
 		String[] options2 = {"Brownian particle", "1D free particle", "2D free particle"};
 		chooseSimulable = new JComboBox(options2);
 		chooseSimulable.setSelectedIndex(0);
@@ -107,9 +112,8 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 		toSimulate = 0;
 
 		this.buttonsOnOff(false, false, false, true, false);
-		//TextField numParticles = new TextField("Enter the desired number of particles");
 
-		display = new SimulationPanel(dt);
+		display = new SimulationPanel(dt); //Creates the display area
 
 		//Sets up horizontal positions of window components
 		layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
@@ -130,6 +134,7 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 							.addComponent(clearButton, 0, 150, 150)
 						)
 				);
+		
 		//Sets up vertical positions of window components
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(display)
@@ -152,83 +157,99 @@ public class StochasticSimulation extends JFrame implements ActionListener {
 
 		frame.setVisible(true);
 	}
+	
+	/**action handler as required by implementation of ActionListener. Handles button presses and menu selections.
+	 * 
+	 * @param e : the ActionEvent to be handled
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
-		boolean simDensity = (chooseSim.getSelectedIndex() == 0);
+		boolean simDensity = (chooseSim.getSelectedIndex() == 1); //Determines whether particle movement or probability density is being simulated
+		System.out.println(simDensity + "simdensity");
 		switch (command) {
 		case "add":
 			this.addParticles(1);
 			this.buttonsOnOff(true, false, false, true, true);
-			chooseSim.setEnabled(false);
 			break;
+			
 		case "start":
-			simDensity = chooseSim.getSelectedIndex() == 1;
 			if (simDensity && !display.hasParticles()) {
-				this.addParticles(1); //Slightly hacky, but necessary
+				this.addParticles(1); //As interfaces must be static, SimulationPanel requires at least one particle to model
 			}
-			System.out.println(simDensity);
 			display.start();
 			this.buttonsOnOff(false, true, false, false, false);
 			chooseSim.setEnabled(false);
 			break;
+			
 		case "pause":
 			display.stop();
 			this.buttonsOnOff(true, false, true, simDensity, true);
+			chooseSim.setEnabled(false);
 			break;
+			
 		case "clear":
 			display.clear();
 			this.buttonsOnOff(!simDensity, false, false, simDensity, false);
 			chooseSim.setEnabled(true);
+			chooseSimulable.setEnabled(true);
 			break;
+			
 		case "reset":
 			display.reset();
 			this.buttonsOnOff(true, false, false, simDensity, true);
+			chooseSim.setEnabled(false);
 			break;
+			
 		case "add10":
 			this.addParticles(10);
 			this.buttonsOnOff(true, false, false, true, true);
 			break;
+			
 		case "add100":
 			this.addParticles(100);
 			this.buttonsOnOff(true, false, false, true, true);
 			break;
+			
 		case "simtype":
 			this.buttonsOnOff(true, false, false, false, true);
 			simDensity = chooseSim.getSelectedIndex() == 1;
 			System.out.println(simDensity);
 			display.simDensity(simDensity);
 			break;
+			
 		case "simulable":
 			this.toSimulate = chooseSimulable.getSelectedIndex();
 		}
-
-
 	}
 
 	/**Adds a number of the currently selected type of particles to the display
 	 * 
-	 * @param number: number to add
+	 * @param number : number to add
 	 */
 	void addParticles (int number) {
+		this.chooseSim.setEnabled(false);
+		this.chooseSimulable.setEnabled(false);
 		switch (Simulables.fromIndex(toSimulate)) {
+		
 		case BROWNIAN_PARTICLE:
 			for (int iii = 0; iii < number; iii++) {
 				display.addParticles(new BrownianParticle(dt));
 			}
 			break;
+			
 		case ONED_PARTICLE:
 			for (int iii = 0; iii < number; iii++) {
-				display.addParticles(new OneDParticle(dt));
+				display.addParticles(new OneDParticle());
 			}
 			break;
+			
 		case TWOD_PARTICLE:
 			for (int iii = 0; iii < number; iii++) {
 				display.addParticles(new TwoDParticle());
 			}
 		}
 	}
-	
 	
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {

@@ -28,10 +28,10 @@ public class BrownianParticle implements Simulable {
 		cumProb = 0;
 		probabilities.add(1.0/Math.sqrt(2.0 * Math.PI * dt)); //probability at dx = 0, i.e. that which the particle remains stationary
 		stepChange.add(0);
-		while (cumProb <0.975 && numCalcs < 25) {
+		//Commented out section is used for the quick version of probability density. Left like this as it was the state during most of the data gathering
+		while (cumProb <0.975 ) { //&& numCalcs < 25) {
 			double prob = 2.0/Math.sqrt(2.0 * Math.PI * dt) * Math.exp(-(dx * dx)/(double)dt); //2 used due to symmetry in transition probabilities for positive or negative step.
 			if (prob == 0) { //Prevents adding multiple zero probabilities to end of list
-				System.out.println("Yes");
 				break;
 			}
 			stepChange.add(dx++); //stores change in x by same index as probabilities.
@@ -40,8 +40,7 @@ public class BrownianParticle implements Simulable {
 			numCalcs++;
 			
 		}
-		System.out.println(cumProb);
-		assert(cumProb <=1) : "Total probability cannot be more than one, how did this even happen...";
+		assert(cumProb <=1) : "Total probability cannot be more than one";
 	}
 	/**Constructor, takes coordinates and generates a random colour for this particle
 	 * 
@@ -60,9 +59,10 @@ public class BrownianParticle implements Simulable {
 	
 	/**Constructor, takes coordinates and also allows the addition of a complete path if this is necesary
 	 * 
-	 * @param x: x coordinate
-	 * @param y: y coordinate
-	 * @param past: predefined path
+	 * @param x : x coordinate
+	 * @param y : y coordinate
+	 * @param past : predefined path
+	 * @param dt : timestep
 	 */
 	BrownianParticle (int x, int y, ArrayList<Point>past, int dt) {
 		currentCoordinates = new Point(x,  y);
@@ -106,6 +106,7 @@ public class BrownianParticle implements Simulable {
 					break; //Exits once the step is found
 				}
 			}
+			//Determines positive or negative step with equal probability
 			if (iii == 0) {
 				currentCoordinates.x += (rand.nextDouble() <= 0.5) ? -step: step;
 			}
@@ -113,7 +114,7 @@ public class BrownianParticle implements Simulable {
 				currentCoordinates.y +=(rand.nextDouble()  <= 0.5) ? -step: step;
 			}
 		}
-		//Necessary to minimise lag for higher numbers of particles at lower values of dt
+		//Necessary to minimise lag for higher numbers of particles
 		if (pastCoordinates.size() > 100) {
 			pastCoordinates.remove(0);
 		}
@@ -128,11 +129,19 @@ public class BrownianParticle implements Simulable {
 		currentCoordinates.y = 0;
 		pastCoordinates = new ArrayList<Point>();
 	}
+	
+	/**Returns current coordinates as required by Simulable interface
+	 * 
+	 * @return the current coordinates
+	 */
 	public Point getPos() {
 		return currentCoordinates;
 	}
 
-
+	/** returns the list of past coordinates
+	 * 
+	 * @return past coordinates as an ArrayList
+	 */
 	@Override
 	public ArrayList<Point> getPath() {
 		ArrayList<Point> results = (ArrayList<Point>)pastCoordinates.clone();
@@ -141,11 +150,23 @@ public class BrownianParticle implements Simulable {
 	}
 
 
+	/**Returns the particle's color as required by Simulable interface
+	 * 
+	 * @return the particle's colour
+	 */
 	@Override
 	public Color getColor() {
 		return color;
 	}
 
+	/**Updates probability densities based on this point's allowed transitions
+	 * 
+	 * @param x : x coordinate
+	 * @param y : y coordinate
+	 * @param t : timestep (unused)
+	 * @param probDensities : previously calculated probability densities (SHOULD NOT BE CHANGED)
+	 * @param newDensities : new probability densities, to be updated based on probability of step transitions
+	 */
 	@Override
 	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> points, ArrayList<ArrayList<Double>> newDensities) {
 		double prob = points.get(x).get(y);
@@ -168,11 +189,23 @@ public class BrownianParticle implements Simulable {
 		}
 	}
 
+	/**Updates probability densities based on this point's allowed transitions, calls the other function
+	 * 
+	 * @parm position : the current coordinates
+	 * @param t : timestep (unused)
+	 * @param probDensities : previously calculated probability densities (SHOULD NOT BE CHANGED)
+	 * @param newDensities : new probability densities, to be updated based on probability of step transitions
+	 */
 	@Override
 	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> points, ArrayList<ArrayList<Double>> newDensities) {
 		changeDensities(position.x, position.y, t, points, newDensities);
 	}
 	
+	/**Used to define the initial state of Probability Density
+	 * @param length: width of the window
+	 * @param height: height of the window
+	 * @return: 2D ArrayList of probability densities
+	 */
 	@Override
 	public ArrayList<ArrayList<Double>> initDensity(int x, int y) {
 		//density is zero everywhere but at the centre

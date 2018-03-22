@@ -30,7 +30,7 @@ public class TwoDParticle implements Simulable {
 		this.currentCoordinates = new Point(0,0);//(startPoint == 0) ? -30 : (startPoint == 1) ? 0 : 30,0);
 		this.colour = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 		//Change max dq below
-		maxSteps = new Point(6,6);
+		maxSteps = new Point(3,6);
 		//Change p below
 		p = new Point2D.Double(0.4, 0.4);
 		

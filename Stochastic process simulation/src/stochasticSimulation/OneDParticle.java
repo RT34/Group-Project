@@ -5,7 +5,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
-/**1D particle corresponding to equation 9, drho/dt = 0.5/dq(rho(x + dx) - rho_bar(x))
+/**1D particle corresponding to equation 9, drho/dt = 0.5/dq(rho(x + dx) - rho_bar(x)). Not used in project, but included for completeness
  * 
  * @author rbroo
  *
@@ -18,16 +18,22 @@ public class OneDParticle implements Simulable {
 	int numSteps; //Number of values of dx
 	double p;
 	
-	public OneDParticle(int dt) {
+	/** Default constructor. Ensures particles are spread on the y-axis to provide differentiatino similar to the probability density
+	 */
+	public OneDParticle() {
 		this.currentCoordinates = new Point(0,rand.nextInt(100) - 50);
 		this.colour = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
 		numSteps = 5;
 		p = 0.1;
 	}
+	/**Updates the position of the particle in one-dimension according to stochastic parameters defined in the constructor
+	 * 
+	 * @param dt : required by interface, but unused
+	 */
 	@Override
 	public void updatePos(int dt) {
 		double cumProb = 0;
-		for (int iii = 1; iii < numSteps +1; iii++) {
+		for (int iii = 1; iii <= numSteps; iii++) {
 			double prob = rand.nextDouble();
 			cumProb += p/iii;
 			if (prob <= cumProb) {
@@ -37,11 +43,20 @@ public class OneDParticle implements Simulable {
 		}
 	}
 
+	/**Returns current position
+	 * 
+	 * @return current position as a point
+	 */
 	@Override
 	public Point getPos() {
 		return currentCoordinates;
 	}
 
+	/**Returns the previous path as required by Simulable interface. However, path is not returned as it will always be a straight line, so current coordinaets are returned
+	 * 
+	 * @return the current coordinates as an ArrayList
+	 * 
+	 */
 	@Override
 	public ArrayList<Point> getPath() {
 		ArrayList<Point> result = new ArrayList<Point>();
@@ -49,15 +64,26 @@ public class OneDParticle implements Simulable {
 		return result; //Path will always be a line, so not super useful to draw
 	}
 
+	/**returns particle to the origin
+	 * 
+	 */
 	@Override
 	public void reset() {
 		this.currentCoordinates = new Point(0,0);
 	}
 
+	/**Updates probability densities based on this point's allowed transitions
+	 * 
+	 * @param x : x coordinate
+	 * @param y : y coordinate
+	 * @param t : timestep (unused)
+	 * @param probDensities : previously calculated probability densities (SHOULD NOT BE CHANGED)
+	 * @param newDensities : new probability densities, to be updated based on probability of step transitions
+	 */
 	@Override
 	public void changeDensities(int x, int y, double t, ArrayList<ArrayList<Double>> probDensities,
 			ArrayList<ArrayList<Double>> newDensities) {
-		for (int iii = 1; iii  < numSteps + 1; iii++) {
+		for (int iii = 1; iii  <= numSteps; iii++) {
 			double probChange = p/iii * probDensities.get(x).get(y);
 			if (x + iii >= newDensities.size()) {
 				continue;
@@ -67,6 +93,13 @@ public class OneDParticle implements Simulable {
 		}
 	}
 
+	/**Updates probability densities based on this point's allowed transitions, calls the other function
+	 * 
+	 * @param position : coordinates to check
+	 * @param t : timestep (unused)
+	 * @param probDensities : previously calculated probability densities (SHOULD NOT BE CHANGED)
+	 * @param newDensities : new probability densities, to be updated based on probability of step transitions
+	 */
 	@Override
 	public void changeDensities(Point position, double t, ArrayList<ArrayList<Double>> probDensities,
 			ArrayList<ArrayList<Double>> newDensities) {
@@ -74,6 +107,11 @@ public class OneDParticle implements Simulable {
 
 	}
 
+	/**Used to define the initial state of Probability Density
+	 * @param length: width of the window
+	 * @param height: height of the window
+	 * @return: 2D ArrayList of probability densities
+	 */
 	@Override
 	public ArrayList<ArrayList<Double>> initDensity(int length, int height) {
 		//density is zero everywhere but a vertical line at the centre, makes it easier to see
@@ -94,6 +132,10 @@ public class OneDParticle implements Simulable {
 				return densities;
 	}
 
+	/**Returns this particle's display colour
+	 * 
+	 * @return this particle's colour
+	 */
 	@Override
 	public Color getColor() {
 		return this.colour;
